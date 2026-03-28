@@ -6,6 +6,7 @@ This repository is a parto of research conducted for 63rd Metallurgical Conferen
 
 ![Gantt Chart](https://marmag0.github.io/endpoints/llm-gantt.png)
 
+
 ### Selected Models (SLM)
 
 - [meta-llama/Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct)
@@ -18,4 +19,7 @@ This repository is a parto of research conducted for 63rd Metallurgical Conferen
     - params: 7B
     - tensor type: BF16
 
-###
+
+### Phase 1
+
+...
