@@ -1,0 +1,10 @@
+services:
+
+  python-llm:
+    build: .
+    container_name: python-llm
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: no
