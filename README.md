@@ -4,7 +4,16 @@ This repository is a parto of research conducted for 63rd Metallurgical Conferen
 
 ### Research Gantt Chart
 
-![Gantt Chart](https://marmag0.github.io/endpoints/llm-gantt.png)
+![Gantt Chart](https://marmag0.github.io/endpoints/llm-eval/llm-gantt.png)
+
+
+### Honeypot Flow
+
+**Production Schema**
+![Production Schema](https://marmag0.github.io/endpoints/llm-eval/hybrid-honeypot-canvas.png)
+
+**LLM Evaluation Schema**
+![LLM Evaluation Schema](https://marmag0.github.io/endpoints/llm-eval/llm-evaluation-canvas.png)
 
 
 ### Selected Models (SLM)
@@ -20,7 +29,7 @@ This repository is a parto of research conducted for 63rd Metallurgical Conferen
     - tensor type: BF16
 
 
-### Unified System Prompt
+### Unified System Prompt (for evaluation)
 
 ```
 ...
