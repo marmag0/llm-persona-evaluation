@@ -38,6 +38,8 @@ This project investigates the capability of modern Large Language Models to effe
 **LLM Evaluation Schema**
 ![LLM Evaluation Schema](https://marmag0.github.io/endpoints/llm-eval/llm-evaluation-canvas.png)
 
+**Performance Grading Schema**
+![Grading Performance Schema](https://marmag0.github.io/endpoints/llm-eval/llm-as-a-judge.png)
 
 ### Unified System Prompt (for evaluation)
 
