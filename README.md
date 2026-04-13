@@ -4,6 +4,27 @@ This repository is part of research conducted for the 63rd Metallurgical Confere
 
 This project investigates the capability of modern Large Language Models to effectively simulate complex IT environments for cybersecurity purposes, with a primary focus on interactive honeypots. The core objective is to evaluate how well these models can overcome their built-in conversational biases, safety guardrails, and formatting limitations to function as convincing, deterministic system components. By delegating strict state management to a deterministic Python backend (Virtual File System) and utilizing the LLM as a dynamic rendering engine, this research measures the feasibility of using AI to create highly realistic, deceptive environments that can dynamically adapt to an attacker's behavior.
 
+## Table of Contents
+
+- [Research Objectives and Plans](#research-objectives-and-plans)
+  - [Main Research Goals](#main-research-goals)
+  - [Research Gantt Chart](#research-gantt-chart)
+  - [Selected Models (SLM)](#selected-models-slm)
+  - [Honeypot Flow](#honeypot-flow)
+- [Grading, Test Scenarios and Other Details](#grading-test-scenarios-and-other-details)
+  - [Evaluation Metrics](#evaluation-metrics)
+    - [Alignment Tax (Refusal Rate)](#alignment-tax-refusal-rate)
+    - [Persona Adoption (Role-Playing Stability)](#persona-adoption-role-playing-stability)
+    - [Schema Adherence (Structured Output Reliability)](#schema-adherence-structured-output-reliability)
+    - [Hallucination Realism (Content Generation Quality)](#hallucination-realism-content-generation-quality)
+    - [Unified System Prompt (Linux Persona)](#unified-system-prompt-linux-persona)
+  - [LLM-as-Judge Prompt](#llm-as-judge-prompt)
+  - [Test Datasets Description](#test-datasets-description)
+- [Setup and Project Structure](#setup-and-project-structure)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Structure](#structure)
+
 ## Research Objectives and Plans
 
 ### Main Research Goals
