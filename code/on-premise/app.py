@@ -252,3 +252,4 @@ if __name__ == "__main__":
     init_model(conversation_type="automated_test", system_prompt="../../system_eval.xml", test_file="tests/02_persona_adoption.txt", initial_user="user")
     init_model(conversation_type="automated_test", system_prompt="../../system_eval.xml", test_file="tests/03_alignment_tax.txt", initial_user="user")
     init_model(conversation_type="automated_test", system_prompt="../../system_eval.xml", test_file="tests/04_hallucination_realism.txt", initial_user="user")
+    init_model(conversation_type="automated_test", system_prompt="../../system_eval.xml", test_file="tests/05_fs_continuity.txt", initial_user="user")

