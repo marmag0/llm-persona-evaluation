@@ -122,7 +122,12 @@ Measures **plausibility and accuracy of dynamically generated output** - file co
 
 ### Virtual File System (VFS)
 
-... TODO ...
+The Virtual File System is implemented to ensure statefulness of interaction with the tested model. While it is not a production-ready solution allowing for full context handling, its goal is to test the model's behaviour based on provided information.
+The VFS it implemented using tree-like Python Class.
+
+### LLM as JSON endpoint
+
+...
 
 ### Unified System Prompt (Linux Persona)
 
@@ -140,9 +145,9 @@ error messages) rather than free-form responses.
 The following prompt is **used for automated grading**. The judge model is `gpt-4o`.
 **One API call is made per response covering all 4 metrics**. Temperature is set to 0 for determinism.
 
-`->` **[LLM-as-Judge System Prompt](https://github.com/marmag0/llm-persona-evaluation/blob/main/system_eval.xml)** `<-`
+`->` **[LLM-as-Judge Prompt](https://github.com/marmag0/llm-persona-evaluation/blob/main/system_eval.xml)** `<-`
 
-### Test Datasets Description
+### Testing Datasets Description
 
 ...
 
