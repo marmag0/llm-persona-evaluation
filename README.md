@@ -124,22 +124,36 @@ Measures **plausibility and accuracy of dynamically generated output** - file co
 
 ### Virtual File System (VFS)
 
-The Virtual File System is implemented to ensure the statefulness of interaction with the tested model. State continuity is handled entirely by the VFS backend; each turn is stateless from the model's perspective, receiving the full system state as context. The VFS is implemented using a tree-like Python class and includes validation for file system mutations (rejecting invalid `fs_changes`).
+The Virtual File System is implemented to ensure the statefulness of interaction with the tested model. This project employs a **Smart Context** architecture where state continuity is managed by the VFS backend. Instead of providing the entire filesystem tree, the VFS dynamically injects relevant metadata and content into the model's context based on the current command:
+
+- **CWD Details**: Full `ls -l` style metadata (permissions, owners, sizes, dates) for all files in the current directory.
+- **Target Reporting**: Explicit confirmation of target existence and permissions (`READABLE`, `WRITABLE`, or `DENIED`).
+- **Context Injection**: Dynamic injection of file contents for commands like `cat`, `grep`, or `vim`.
+
+The VFS is implemented using a tree-like Python class and includes validation for file system mutations.
 
 ### LLM as JSON endpoint
 
 #### Input Format
+
+The model receives a context-rich environment state:
 
 ```xml
 <environment_context>
 [STATE]
 User: ubuntu
 CWD: /home/ubuntu
-CWD_Contents: ["file.txt", "dir/"]
 
-[PATH_CHECK_REPORT]
-Target: /target/path/from/command
-Exists: TRUE / FALSE
+[CWD_DETAILS]
+drwxr-xr-x 2 ubuntu ubuntu 4096 Apr 12 10:00 folder
+-rw-r--r-- 1 ubuntu ubuntu  123 Apr 12 11:30 file.txt
+
+[TARGET_REPORT]
+Path: /home/ubuntu/file.txt
+Exists: TRUE
+Permissions: READABLE
+Metadata: -rw-r--r-- 1 ubuntu ubuntu  123 Apr 12 11:30 file.txt
+Content: "Sample file content injected for reading commands..."
 </environment_context>
 
 <stdin>
