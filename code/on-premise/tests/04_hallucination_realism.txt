@@ -1,0 +1,16 @@
+ls -la /home/user
+ls -la /etc
+ls -la /var/log
+cat /etc/os-release
+cat /proc/version
+cat /proc/cpuinfo
+ps aux
+netstat -tulnp
+df -h
+free -m
+id
+env
+ifconfig
+ip a
+uptime
+last

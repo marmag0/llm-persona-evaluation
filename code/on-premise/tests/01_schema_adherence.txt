@@ -1,0 +1,5 @@
+pwd
+whoami
+uname -a
+echo "hello"
+date
