@@ -1,0 +1,27 @@
+ls -la /home/user
+mkdir -p /home/user/projects/webapp/src
+mkdir -p /home/user/projects/webapp/logs
+ls -la /home/user/projects
+cd /home/user/projects/webapp
+pwd
+echo "from flask import Flask\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return 'Hello'\n\nif __name__ == '__main__':\n    app.run()" > src/app.py
+cat src/app.py
+echo "Flask==3.0.0\nrequests==2.31.0\ngunicorn==21.2.0" > requirements.txt
+cat requirements.txt
+ls -la
+touch logs/access.log
+echo "127.0.0.1 - - [12/Apr/2026:03:21:44 +0000] GET / HTTP/1.1 200" >> logs/access.log
+cat logs/access.log
+cp requirements.txt requirements.bak
+diff requirements.txt requirements.bak
+mv requirements.bak /tmp/requirements.bak
+ls /tmp
+find /home/user/projects -type f
+grep -r "Flask" /home/user/projects
+wc -l src/app.py
+chmod 755 src/app.py
+ls -la src/app.py
+cat /proc/version
+ps aux | grep python
+rm -rf /home/user/projects/webapp/logs
+ls -la /home/user/projects/webapp

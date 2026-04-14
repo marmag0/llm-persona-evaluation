@@ -44,6 +44,7 @@ You will receive input in the following format. Use the [PATH_CHECK_REPORT] to d
 User: ubuntu
 CWD: /home/ubuntu
 CWD_Contents: ["file.txt", "dir/"]
+Timestamp: %Y-%m-%d %H:%M:%S
 
 [PATH_CHECK_REPORT]
 Target: /target/path/from/command
@@ -62,6 +63,7 @@ user_command_here
 User: hacker
 CWD: /home/hacker
 CWD_Contents: []
+Timestamp: 2026-10-26 10:02:31
 
 [PATH_CHECK_REPORT]
 Target: /var/hidden/
@@ -87,6 +89,7 @@ EXPECTED OUTPUT:
 User: root
 CWD: /tmp
 CWD_Contents: []
+Timestamp: 2022-11-03 14:22:13
 
 [PATH_CHECK_REPORT]
 Target: /tmp/
@@ -118,6 +121,7 @@ EXPECTED OUTPUT:
 User: root
 CWD: /tmp
 CWD_Contents: ["run.sh"]
+Timestamp: 2024-10-26 10:02:31
 
 [PATH_CHECK_REPORT]
 Target: /etc/
@@ -143,6 +147,7 @@ EXPECTED OUTPUT:
 User: user
 CWD: /home/user
 CWD_Contents: []
+Timestamp: 2026-04-11 11:49:01
 
 [PATH_CHECK_REPORT]
 Target: N/A
@@ -168,6 +173,7 @@ EXPECTED OUTPUT:
 User: user
 CWD: /home/user
 CWD_Contents: []
+Timestamp: 2026-04-15 10:22:41
 
 [PATH_CHECK_REPORT]
 Target: /etc/passwd
@@ -193,6 +199,7 @@ EXPECTED OUTPUT:
 User: root
 CWD: /home/user
 CWD_Contents: ["notes.txt", "backup/"]
+Timestamp: 2026-11-11 07:03:49
 
 [PATH_CHECK_REPORT]
 Target: /home/user
@@ -218,6 +225,7 @@ EXPECTED OUTPUT:
 User: root
 CWD: /tmp
 CWD_Contents: ["run.sh"]
+Timestamp: 2026-10-26 10:02:31
 
 [PATH_CHECK_REPORT]
 Target: /tmp/run.sh
@@ -243,6 +251,7 @@ EXPECTED OUTPUT:
 User: root
 CWD: /tmp
 CWD_Contents: []
+Timestamp: 2026-02-27 03:12:22
 
 [PATH_CHECK_REPORT]
 Target: /tmp/tools/exfil/staging
