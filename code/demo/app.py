@@ -32,13 +32,13 @@ def log_turn(logger: logging.Logger, turn: int, command: str, raw: str, parsed: 
     judge script can load each line independently without context.
 
     Fields:
-      turn          - sequential turn number within session
-      command       - raw user input sent to model
-      raw           - exact model response string before any parsing
-      parsed        - parsed JSON dict or null if parsing failed
-      rejected      - list of fs_changes rejected by VFS validation
-      parse_failed  - true if raw could not be parsed as JSON at all
-      timestamp     - ISO timestamp for ordering across sessions
+      turn - sequential turn number within session
+      command - raw user input sent to model
+      raw - exact model response string before any parsing
+      parsed - parsed JSON dict or null if parsing failed
+      rejected - list of fs_changes rejected by VFS validation
+      parse_failed - true if raw could not be parsed as JSON at all
+      timestamp - ISO timestamp for ordering across sessions
     """
 
     entry = {
@@ -225,10 +225,10 @@ def init_model(conversation_type: str = "human_in_the_loop", system_prompt: str 
     vfs    = VirtualFileSystem(initial_user=initial_user)
     logger = setup_logger(session_id)
 
-    print(f"\nSession : {session_id}")
-    print(f"Mode    : {conversation_type}")
-    print(f"Model   : {chat.model_name}")
-    print(f"Log     : results/{session_id}.jsonl\n")
+    print(f"\nSession: {session_id}")
+    print(f"Mode: {conversation_type}")
+    print(f"Model: {chat.model_name}")
+    print(f"Log: results/{session_id}.jsonl\n")
 
     if conversation_type == "human_in_the_loop":
         human_in_the_loop(chat, vfs, SYSTEM_PROMPT, logger)

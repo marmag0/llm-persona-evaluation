@@ -4,6 +4,8 @@
 
 This repository is part of research conducted for the 63rd Metallurgical SKN AGH Conference, presenting the challenges of persona adoption in Small Language Models (SLMs) when emulating services for cybersecurity threat intelligence.
 
+The offical paper name is: **"Evaluation of Small Language Models as Linux Terminal Emulator in the Context of SSH Honeypot"**.
+
 This project investigates the capability of modern Small Language Models to effectively simulate complex IT environments for cybersecurity purposes, with a primary focus on interactive honeypots. The core objective is to evaluate how well these models can overcome their **built-in conversational biases**, **safety guardrails**, and **formatting limitations** to function as **convincing, deterministic system components**. By delegating strict state management to a deterministic Python backend (Virtual File System) and utilizing the SLM as a dynamic rendering engine, this research measures the feasibility of using AI to create highly realistic, deceptive environments that can dynamically adapt to an attacker's behavior.
 
 ## Table of Contents
