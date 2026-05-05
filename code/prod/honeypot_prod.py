@@ -12,6 +12,25 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from vfs_prod import VirtualFileSystem
 
 
+# Tested models hosted on RunPod via vLLM
+# ------------------------------------------------------------------
+
+TESTED_MODELS = {
+    "llama-3.1-8b": {
+        "model_string": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "base_url_env": "RUNPOD_LLAMA_URL",
+    },
+    "qwen-2.5-7b": {
+        "model_string": "Qwen/Qwen2.5-7B-Instruct",
+        "base_url_env": "RUNPOD_QWEN_URL",
+    },
+    "mistral-7b": {
+        "model_string": "mistralai/Mistral-7B-Instruct-v0.3",
+        "base_url_env": "RUNPOD_MISTRAL_URL",
+    },
+}
+
+
 # Logging Handlers
 # ------------------------------------------------------------------
 
@@ -77,14 +96,14 @@ def log_turn(session_id: str, turn_idx: int, command: str, raw_response: str, pa
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def finalize_session(session_id: str, metadata: dict):
+def finalize_session(session_id: str, metadata: dict, master_path: Path):
     """
     Collapses all temporary turn logs into a single master JSONL line.
-    Enables efficient LLM-as-a-judge evaluation of the entire scenario.
+    The master file is determined by the caller (init_model) based on
+    model_id and scenario, so multiple parallel batches don't collide.
     """
 
     tmp_path = Path(f"results/tmp_{session_id}.jsonl")
-    master_path = Path("results/master_results.jsonl")
     
     if not tmp_path.exists():
         return
@@ -100,6 +119,7 @@ def finalize_session(session_id: str, metadata: dict):
             "history": history
         }
         
+        master_path.parent.mkdir(parents=True, exist_ok=True)
         with open(master_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(session_record, ensure_ascii=False) + "\n")
             
@@ -270,18 +290,34 @@ def init_model(
     iterates over (model, state, scenario, iteration_idx).
     """
 
-    # load API key (.env fallback)
-    api_key = os.getenv("API_KEY")
-    if not api_key:
-        load_dotenv()
-        api_key = os.getenv("API_KEY")
+    load_dotenv()
 
-    # init chat with model
-    chat = ChatOpenAI(
-        model=model_id,
-        api_key=api_key,
-        temperature=temperature
-    )
+    # backend selection: tested models go to RunPod vLLM, judges/baselines to OpenAI
+    if model_id in TESTED_MODELS:
+        cfg = TESTED_MODELS[model_id]
+        base_url = os.getenv(cfg["base_url_env"])
+        
+        if not base_url:
+            print(f"[ERROR] Missing env var {cfg['base_url_env']}. "
+                  f"Set it to RunPod pod URL in .env")
+            return
+        
+        chat = ChatOpenAI(
+            model=cfg["model_string"],
+            api_key="dummy",
+            base_url=base_url.rstrip("/") + "/v1",
+            temperature=temperature,
+        )
+        safe_model = model_id
+
+    else:
+        api_key = os.getenv("API_KEY")
+        chat = ChatOpenAI(
+            model=model_id,
+            api_key=api_key,
+            temperature=temperature,
+        )
+        safe_model = model_id.replace("/", "-")
 
     # load system prompt
     sp_path = Path(system_prompt)
@@ -291,7 +327,6 @@ def init_model(
 
     # determine session_id and test_case_id
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    safe_model = model_id.replace("/", "-")
     
     if conversation_type == "automated_test":
         if not test_file:
@@ -326,8 +361,15 @@ def init_model(
         "system_prompt_file": system_prompt,
     }
 
-    finalize_session(session_id, metadata)
-    print(f"Log: results/master_results.jsonl\n")
+    # For HITL, group all sessions under the model dir as a single hitl file
+    if conversation_type == "automated_test":
+        master_path = Path("results") / safe_model / f"{safe_model}_{test_case_id}.jsonl"
+    else:
+        master_path = Path("results") / safe_model / f"{safe_model}_hitl.jsonl"
+
+    finalize_session(session_id, metadata, master_path)
+
+    print(f"Log: {master_path}\n")
 
 
 

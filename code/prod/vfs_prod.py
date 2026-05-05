@@ -303,7 +303,7 @@ class VirtualFileSystem:
         del node.parent.children[node.file_name]
         node.parent = None
         
-        # When cwd is deleted, fallback to root
+        # When cwd is deleted, fall back to root
         if not self._is_reachable(self.cwd_node):
             self.cwd_node = self.root
         
@@ -315,7 +315,7 @@ class VirtualFileSystem:
         Used to reject model attempts to switch to non-existent users."""
         
         passwd_node = self._get_node("/etc/passwd")
-        users = {self.current_user, "root"}  # zawsze włącz aktualnego usera i roota
+        users = {self.current_user, "root"}  # always include the current user and root
         
         if passwd_node is None or passwd_node.is_dir:
             return users
