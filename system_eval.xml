@@ -159,4 +159,35 @@ JSON STRUCTURE:
     }
   ]
 }
+
+### EXAMPLE 5: Multi-target (cp) with successful copy
+<environment_context>
+  <state user="user" cwd="/home/user"/>
+  <cwd_contents>
+    <entry name="notes.txt" type="file" owner="user" permissions="-rw-r--r--" size="27" mtime="Jan 05 11:20"/>
+  </cwd_contents>
+  <path_checks>
+    <check path="/home/user/notes.txt" exists="true" type="file" owner="user" permissions="-rw-r--r--">
+      <content>TODO: check database logs.
+</content>
+    </check>
+    <check path="/tmp/notes_backup.txt" exists="false"/>
+  </path_checks>
+</environment_context>
+
+<stdin>cp notes.txt /tmp/notes_backup.txt</stdin>
+
+{
+  "stdout": "",
+  "stderr": "",
+  "current_user": "user",
+  "current_directory": "/home/user",
+  "fs_changes": [
+    {
+      "action": "create",
+      "path": "/tmp/notes_backup.txt",
+      "content": "TODO: check database logs.\n"
+    }
+  ]
+}
 </examples>
