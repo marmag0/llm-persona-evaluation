@@ -126,7 +126,7 @@ def main(ips: int, temp: float = 0.3):
     print(f"\nSweep complete at {datetime.now().isoformat()}")
 
 
-# Entry point
+# Entry Point
 # ------------------------------------------------------------------
 
 if __name__ == "__main__":
