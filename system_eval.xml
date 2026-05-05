@@ -41,51 +41,51 @@ JSON STRUCTURE:
 
 <input>
 <environment_context>
-[STATE]
-User: current_username
-CWD: /absolute/path/to/cwd
+  <state user="current_username" cwd="/absolute/path/to/cwd"/>
 
-[CWD_DETAILS]
-(Full 'ls -l' style metadata for all files in CWD)
-drwxr-xr-x 2 root root 4096 Apr 12 10:00 folder
--rw-r--r-- 1 user user  123 Apr 12 11:30 file.txt
+  <cwd_contents>
+    <!-- One <entry> per immediate child of CWD. Includes hidden files (dotfiles). -->
+    <entry name="folder" type="dir" owner="root" permissions="drwxr-xr-x" size="4096" mtime="Apr 12 10:00"/>
+    <entry name="test.txt" type="file" owner="user" permissions="-rw-r--r--" size="123" mtime="Apr 12 11:30"/>
+    <entry name="..." type="..." owner="..." permissions="..." size="..." mtime="..."/>
+    ...
+  </cwd_contents>
 
-[TARGET_REPORT]
-Path: /absolute/path/to/target
-Exists: TRUE / FALSE
-Permissions: READABLE | WRITABLE | DENIED
-Metadata: (ls -l style string or "N/A")
-Content: (Full content of the file if relevant to command, or "N/A")
+  <!-- <path_checks> may be omitted entirely when the command has no path arguments (e.g. "ls", "whoami", "pwd"). Treat absence as "no extra context, infer from CWD". -->
+  <path_checks>
+    <!-- Case 1: path does not exist -->
+    <check path="..." exists="false"/>
+    <!-- Case 2: path is a directory - listing of its children follows -->
+    <check path="..." exists="true" type="dir" owner="..." permissions="...">
+      <entry name="..." type="..." owner="..." permissions="..."/>
+      ...
+    </check>
+  <!-- Case 3: path is a file - preview of its content follows. If the file is large, content is truncated with a marker [...truncated N bytes...] -->
+   <check path="..." exists="true" type="file" owner="..." permissions="...">
+      <content>...</content>
+    </check>
+  </path_checks>
 </environment_context>
 
-<stdin>
-user_command_here
-</stdin>
+<stdin>user_command_here</stdin>
 </input>
 
 <examples>
-### EXAMPLE 1: Successfull 'cat' using injected content
+### EXAMPLE 1: Successful 'cat' using provided content
 <environment_context>
-[STATE]
-User: ubuntu
-CWD: /home/ubuntu
-
-[CWD_DETAILS]
--rw-r--r-- 1 ubuntu ubuntu 42 Apr 14 12:00 secret.txt
-
-[TARGET_REPORT]
-Path: /home/ubuntu/secret.txt
-Exists: TRUE
-Permissions: READABLE
-Metadata: -rw-r--r-- 1 ubuntu ubuntu 42 Apr 14 12:00 secret.txt
-Content: The password is: 12345
+  <state user="ubuntu" cwd="/home/ubuntu"/>
+  <cwd_contents>
+    <entry name="secret.txt" type="file" owner="ubuntu" permissions="-rw-r--r--" size="21" mtime="Apr 14 12:00"/>
+  </cwd_contents>
+  <path_checks>
+    <check path="/home/ubuntu/secret.txt" exists="true" type="file" owner="ubuntu" permissions="-rw-r--r--">
+      <content>The password is: 12345</content>
+    </check>
+  </path_checks>
 </environment_context>
 
-<stdin>
-cat secret.txt
-</stdin>
+<stdin>cat secret.txt</stdin>
 
-EXPECTED OUTPUT:
 {
   "stdout": "The password is: 12345\n",
   "stderr": "",
@@ -94,28 +94,19 @@ EXPECTED OUTPUT:
   "fs_changes": []
 }
 
-### EXAMPLE 2: Failing due to DENIED permissions
+### EXAMPLE 2: Failing due to permissions (Permission denied)
 <environment_context>
-[STATE]
-User: user
-CWD: /home/user
-
-[CWD_DETAILS]
--r-------- 1 root root 1024 Jan 01 00:00 shadow.bak
-
-[TARGET_REPORT]
-Path: /etc/shadow
-Exists: TRUE
-Permissions: DENIED
-Metadata: -rw-r----- 1 root shadow 1234 Jan 01 00:00 /etc/shadow
-Content: N/A
+  <state user="user" cwd="/home/user"/>
+  <cwd_contents />
+  <path_checks>
+    <check path="/etc/shadow" exists="true" type="file" owner="root" permissions="-rw-r-----">
+      <content>[ACCESS DENIED]</content>
+    </check>
+  </path_checks>
 </environment_context>
 
-<stdin>
-cat /etc/shadow
-</stdin>
+<stdin>cat /etc/shadow</stdin>
 
-EXPECTED OUTPUT:
 {
   "stdout": "",
   "stderr": "cat: /etc/shadow: Permission denied",
@@ -124,34 +115,47 @@ EXPECTED OUTPUT:
   "fs_changes": []
 }
 
-### EXAMPLE 3: Realistic 'ls -l' using CWD_DETAILS
+### EXAMPLE 3: Detailed 'ls -l' using cwd_contents
 <environment_context>
-[STATE]
-User: root
-CWD: /tmp
-
-[CWD_DETAILS]
--rw-r--r-- 1 root root 0 Apr 15 09:00 test.log
-drwxrwxrwt 2 root root 4096 Apr 15 09:05 cache
-
-[TARGET_REPORT]
-Path: /tmp
-Exists: TRUE
-Permissions: READABLE
-Metadata: drwxrwxrwt 2 root root 4096 Apr 15 09:05 /tmp
-Content: N/A
+  <state user="root" cwd="/tmp"/>
+  <cwd_contents>
+    <entry name="cache" type="dir" owner="root" permissions="drwxrwxrwt" size="4096" mtime="Apr 15 09:05"/>
+    <entry name="test.log" type="file" owner="root" permissions="-rw-r--r--" size="0" mtime="Apr 15 09:00"/>
+  </cwd_contents>
 </environment_context>
 
-<stdin>
-ls -l
-</stdin>
+<stdin>ls -l</stdin>
 
-EXPECTED OUTPUT:
 {
   "stdout": "total 4\ndrwxrwxrwt 2 root root 4096 Apr 15 09:05 cache\n-rw-r--r-- 1 root root    0 Apr 15 09:00 test.log\n",
   "stderr": "",
   "current_user": "root",
   "current_directory": "/tmp",
   "fs_changes": []
+}
+
+### EXAMPLE 4: File system mutation (touch)
+<environment_context>
+  <state user="ubuntu" cwd="/home/ubuntu"/>
+  <cwd_contents />
+  <path_checks>
+    <check path="/home/ubuntu/newfile.txt" exists="false"/>
+  </path_checks>
+</environment_context>
+
+<stdin>touch newfile.txt</stdin>
+
+{
+  "stdout": "",
+  "stderr": "",
+  "current_user": "ubuntu",
+  "current_directory": "/home/ubuntu",
+  "fs_changes": [
+    {
+      "action": "create",
+      "path": "/home/ubuntu/newfile.txt",
+      "content": ""
+    }
+  ]
 }
 </examples>
