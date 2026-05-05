@@ -4,7 +4,7 @@
 
 This repository is part of research conducted for the 63rd Metallurgical SKN AGH Conference, presenting the challenges of persona adoption in Small Language Models (SLMs) when emulating services for cybersecurity threat intelligence.
 
-The offical paper name is: **"Evaluation of Small Language Models as Linux Terminal Emulator in the Context of SSH Honeypot"**.
+The official paper name is: **"Evaluation of Small Language Models as Linux Terminal Emulator in the Context of SSH Honeypot"**.
 
 This project investigates the capability of modern Small Language Models to effectively simulate complex IT environments for cybersecurity purposes, with a primary focus on interactive honeypots. The core objective is to evaluate how well these models can overcome their **built-in conversational biases**, **safety guardrails**, and **formatting limitations** to function as **convincing, deterministic system components**. By delegating strict state management to a deterministic Python backend (Virtual File System) and utilizing the SLM as a dynamic rendering engine, this research measures the feasibility of using AI to create highly realistic, deceptive environments that can dynamically adapt to an attacker's behavior.
 
@@ -138,29 +138,39 @@ The VFS is implemented using a tree-like Python class and includes validation fo
 
 #### Input Format
 
-The model receives a context-rich environment state:
+The model receives a context-rich environment state using context injection:
 
 ```xml
+<input>
 <environment_context>
-[STATE]
-User: ubuntu
-CWD: /home/ubuntu
+  <state user="current_username" cwd="/absolute/path/to/cwd"/>
 
-[CWD_DETAILS]
-drwxr-xr-x 2 ubuntu ubuntu 4096 Apr 12 10:00 folder
--rw-r--r-- 1 ubuntu ubuntu  123 Apr 12 11:30 file.txt
+  <cwd_contents>
+    <!-- One <entry> per immediate child of CWD. Includes hidden files (dotfiles). -->
+    <entry name="folder" type="dir" owner="root" permissions="drwxr-xr-x" size="4096" mtime="Apr 12 10:00"/>
+    <entry name="test.txt" type="file" owner="user" permissions="-rw-r--r--" size="123" mtime="Apr 12 11:30"/>
+    <entry name="..." type="..." owner="..." permissions="..." size="..." mtime="..."/>
+    ...
+  </cwd_contents>
 
-[TARGET_REPORT]
-Path: /home/ubuntu/file.txt
-Exists: TRUE
-Permissions: READABLE
-Metadata: -rw-r--r-- 1 ubuntu ubuntu  123 Apr 12 11:30 file.txt
-Content: "Sample file content injected for reading commands..."
+  <!-- <path_checks> may be omitted entirely when the command has no path arguments (e.g. "ls", "whoami", "pwd"). Treat absence as "no extra context, infer from CWD". -->
+  <path_checks>
+    <!-- Case 1: path does not exist -->
+    <check path="..." exists="false"/>
+    <!-- Case 2: path is a directory - listing of its children follows -->
+    <check path="..." exists="true" type="dir" owner="..." permissions="...">
+      <entry name="..." type="..." owner="..." permissions="..."/>
+      ...
+    </check>
+  <!-- Case 3: path is a file - preview of its content follows. If the file is large, content is truncated with a marker [...truncated N bytes...] -->
+   <check path="..." exists="true" type="file" owner="..." permissions="...">
+      <content>...</content>
+    </check>
+  </path_checks>
 </environment_context>
 
-<stdin>
-user_command_here
-</stdin>
+<stdin>user_command_here</stdin>
+</input>
 ```
 
 #### Output Format
@@ -196,15 +206,15 @@ The following prompt is **used for automated grading**. The judge model is `gpt-
 
 ```python
 chat = ChatOpenAI(
-        model="gpt-5-nano-2025-08-07",
-        api_key=api_key,
-        temperature=0
-    )
+    model="gpt-5-nano-2025-08-07",
+    api_key=api_key,
+    temperature=0
+)
 
 messages = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=history)
-    ]
+    SystemMessage(content=system_prompt),
+    HumanMessage(content=history)
+]
 
 response = chat.invoke(messages)
 ```
@@ -215,22 +225,39 @@ response = chat.invoke(messages)
 
 The following test scenarios are executed to evaluate model performance:
 
-1. **[Schema Adherence](https://github.com/marmag0/llm-persona-evaluation/blob/main/code/demo/tests/01_schema_adherence.txt)** - Tests basic command execution and JSON structure validity.
-2. **[Persona Adoption](https://github.com/marmag0/llm-persona-evaluation/blob/main/code/demo/tests/02_persona_adoption.txt)** - Attempts to break the persona with direct questions and meta-conversation.
-3. **[Alignment Tax](https://github.com/marmag0/llm-persona-evaluation/blob/main/code/demo/tests/03_alignment_tax.txt)** - Evaluates refusal rates for security-sensitive and potentially harmful commands.
-4. **[Hallucination Realism](https://github.com/marmag0/llm-persona-evaluation/blob/main/code/demo/tests/04_hallucination_realism.txt)** - Measures the plausibility of generated system files and command outputs.
-5. **[FS Continuity](https://github.com/marmag0/llm-persona-evaluation/blob/main/code/demo/tests/05_fs_continuity.txt)** - Tests complex workflows requiring multi-step state persistence.
+1. **[Schema Adherence](https://github.com/marmag0/llm-persona-evaluation/blob/main/tests/01_schema_adherence.txt)** - Tests basic command execution and JSON structure validity.
+2. **[Persona Adoption](https://github.com/marmag0/llm-persona-evaluation/blob/main/tests/02_persona_adoption.txt)** - Attempts to break the persona with direct questions and meta-conversation.
+3. **[Alignment Tax](https://github.com/marmag0/llm-persona-evaluation/blob/main/tests/03_alignment_tax.txt)** - Evaluates refusal rates for security-sensitive and potentially harmful commands.
+4. **[Hallucination Realism](https://github.com/marmag0/llm-persona-evaluation/blob/main/tests/04_hallucination_realism.txt)** - Measures the plausibility of generated system files and command outputs.
+5. **[FS Continuity](https://github.com/marmag0/llm-persona-evaluation/blob/main/tests/05_fs_continuity.txt)** - Tests complex workflows requiring multi-step state persistence.
 
-## Setup and Project Structure
+### Logging
 
-### Prerequisites
+Results are logged in JSONL format where each line represents a single session (a few interactions with the model within a test scenario). This flat structure allows the evaluation script to process each turn. Each log entry contains the following fields:
+
+```JSONL
+log_entry = {
+    "turn": turn,
+    "timestamp": ts,
+    "command": cmd,
+    "raw": raw_response,
+    "parsed": parsed,
+    "state_rejected": rejection_result["state_rejected"],
+    "fs_rejected": rejection_result["fs_rejected"],
+    "parse_failed": parse_failed,
+}
+```
+
+## Setup and Project Structure [TODO]
+
+### Prerequisites [TODO]
 
 ...
 
-### Setup
+### Setup [TODO]
 
 ...
 
-### Structure
+### Structure [TODO]
 
 ...

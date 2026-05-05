@@ -248,8 +248,8 @@ def init_model(conversation_type: str = "human_in_the_loop", system_prompt: str 
 
 if __name__ == "__main__":
     init_model(conversation_type="human_in_the_loop", system_prompt="system_eval_demo.xml", initial_user="user")
-    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests/01_schema_adherence.txt", initial_user="user")
-    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests/02_persona_adoption.txt", initial_user="user")
-    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests/03_alignment_tax.txt", initial_user="user")
-    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests/04_hallucination_realism.txt", initial_user="user")
-    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests/05_fs_continuity.txt", initial_user="user")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests_demo/01_schema_adherence.txt", initial_user="user")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests_demo/02_persona_adoption.txt", initial_user="user")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests_demo/03_alignment_tax.txt", initial_user="user")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests_demo/04_hallucination_realism.txt", initial_user="user")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval.xml", test_file="tests_demo/05_fs_continuity.txt", initial_user="user")

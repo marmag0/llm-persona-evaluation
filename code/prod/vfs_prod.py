@@ -87,6 +87,7 @@ class VirtualFileSystem:
         
         self._bootstrap()
         self.cwd_node = self._get_node(f"/home/{initial_user}") or self.root
+        self._valid_users = self._parse_valid_users()
     
 
     # getting path and node details
@@ -309,6 +310,26 @@ class VirtualFileSystem:
         return True
     
 
+    def _parse_valid_users(self) -> set[str]:
+        """Parses /etc/passwd to build a set of valid usernames.
+        Used to reject model attempts to switch to non-existent users."""
+        
+        passwd_node = self._get_node("/etc/passwd")
+        users = {self.current_user, "root"}  # zawsze włącz aktualnego usera i roota
+        
+        if passwd_node is None or passwd_node.is_dir:
+            return users
+        
+        for line in (passwd_node.content or "").splitlines():
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split(":")
+            if parts and parts[0]:
+                users.add(parts[0])
+        
+        return users
+    
+
     # building context for model
     # -------------------------------
 
@@ -451,6 +472,130 @@ class VirtualFileSystem:
                 targets.append(part)
         
         return targets
+    
+
+    def snapshot(self) -> dict:
+        """Minimal serialization for debug. No from_snapshot - just for /vfs command."""
+        def serialize(node):
+            d = {"file_name": node.file_name, "is_dir": node.is_dir,
+                "owner": node.owner, "permissions": node.permissions}
+            if node.is_dir:
+                d["children"] = {n: serialize(c) for n, c in node.children.items()}
+            else:
+                d["size"] = len(node.content)
+            return d
+        return {"current_user": self.current_user, "cwd": self.cwd, "tree": serialize(self.root)}
+
+    
+    # apply model response to VFS
+    # -------------------------------
+
+
+    def apply_state(self, new_user: str | None, new_cwd: str | None) -> list[dict]:
+        """Applies state changes (user, cwd) from model output.
+        Returns list of rejections - each is a dict {field, value, reason}."""
+        
+        rejected = []
+        
+        # user
+        if new_user is not None:
+            if not isinstance(new_user, str) or not new_user:
+                rejected.append({"field": "current_user", "value": new_user, "reason": "must be non-empty string"})
+            elif new_user not in self._valid_users:
+                rejected.append({"field": "current_user", "value": new_user, "reason": f"user not in /etc/passwd"})
+            else:
+                self.current_user = new_user
+        
+        # cwd
+        if new_cwd is not None:
+            if not isinstance(new_cwd, str) or not new_cwd.startswith("/"):
+                rejected.append({"field": "current_directory", "value": new_cwd, "reason": "must be absolute path"})
+            else:
+                node = self._get_node(new_cwd)
+                if node is None:
+                    rejected.append({"field": "current_directory", "value": new_cwd, "reason": "path does not exist"})
+                elif not node.is_dir:
+                    rejected.append({"field": "current_directory", "value": new_cwd, "reason": "path is not a directory"})
+                else:
+                    self.cwd_node = node
+        
+        return rejected
+    
+
+    def apply_fs_changes(self, changes: list) -> list[dict]:
+        """Applies fs_changes list from model output.
+        Returns list of rejections — each is a dict {change, reason}."""
+        
+        rejected = []
+        
+        if not isinstance(changes, list):
+            return [{"change": changes, "reason": "fs_changes must be a list"}]
+        
+        for change in changes:
+            if not isinstance(change, dict):
+                rejected.append({"change": change, "reason": "change must be a dict"})
+                continue
+            
+            action = change.get("action")
+            path = change.get("path")
+            content = change.get("content")
+            
+            if action not in {"create", "modify", "delete"}:
+                rejected.append({"change": change, "reason": f"unknown action: {action!r}"})
+                continue
+            
+            if not isinstance(path, str) or not path:
+                rejected.append({"change": change, "reason": "path must be non-empty string"})
+                continue
+            
+            if action == "create":
+                if content is None:
+                    result = self._mkdir(path)
+                else:
+                    if not isinstance(content, str):
+                        rejected.append({"change": change, "reason": "content must be string or null"})
+                        continue
+                    result = self._mkfile(path, content)
+                
+                if result is None:
+                    rejected.append({"change": change, "reason": "create failed (parent missing or path exists)"})
+            
+            elif action == "modify":
+                if content is None or not isinstance(content, str):
+                    rejected.append({"change": change, "reason": "modify requires string content"})
+                    continue
+                if not self._modify(path, content):
+                    rejected.append({"change": change, "reason": "modify failed (path missing or is dir)"})
+            
+            elif action == "delete":
+                if not self._delete(path):
+                    rejected.append({"change": change, "reason": "delete failed (path missing or filesystem invariant)"})
+        
+        return rejected
+    
+
+    def apply_response(self, response: dict) -> dict:
+        """Top-level entry point after parsing model JSON.
+        Returns dict {state_rejected, fs_rejected} for logging.
+        Never raises - always commits what it can, logs rest."""
+        
+        if not isinstance(response, dict):
+            return {
+                "state_rejected": [{"reason": "response is not a dict", "value": response}], 
+                "fs_rejected": [],
+            }
+        
+        state_rejected = self.apply_state(
+            new_user=response.get("current_user"),
+            new_cwd=response.get("current_directory"),
+        )
+        
+        fs_rejected = self.apply_fs_changes(response.get("fs_changes", []))
+        
+        return {
+            "state_rejected": state_rejected,
+            "fs_rejected": fs_rejected,
+        }
 
 
     # bootstrap for VFS init
@@ -605,7 +750,7 @@ class VirtualFileSystem:
 
 
 
-# Debug
+# Main Function - Debug
 # ------------------------------------------------------------------
 
 if __name__ == "__main__":
