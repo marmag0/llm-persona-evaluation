@@ -53,7 +53,7 @@ DATASET_PATH = "dataset_full.jsonl"
 MAX_SEQ_LEN = 8192
 BATCH_SIZE = 1
 GRAD_ACCUM = 8
-EPOCHS = 3
+EPOCHS = 2
 LR = 2e-4
 RANK = 16
 
