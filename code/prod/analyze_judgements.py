@@ -7,11 +7,11 @@ from statistics import mean, stdev
 Aggregate statistics from results/judgements/.
 
 Produces:
-  - results/analysis/summary_table.md — main table for paper
-  - results/analysis/per_scenario.md — model x scenario x metric breakdown
-  - results/analysis/ft_delta.md — pre-FT vs post-FT comparison
-  - results/analysis/score_distribution.md — % of each score per metric
-  - results/analysis/raw_aggregated.csv — flat CSV for plotting in matplotlib/excel
+  - results/analysis/summary_table.md - main table for paper
+  - results/analysis/per_scenario.md - model x scenario x metric breakdown
+  - results/analysis/ft_delta.md - pre-FT vs post-FT comparison
+  - results/analysis/score_distribution.md - % of each score per metric
+  - results/analysis/raw_aggregated.csv - flat CSV for plotting in matplotlib/excel
 """
 
 JUDGEMENTS_DIR = Path("results/judgements")
@@ -134,7 +134,7 @@ def score_distribution(records: list[dict]) -> dict:
 def render_summary_table(by_model: dict) -> str:
     """Main paper table: model x metric averages + overall."""
     
-    lines = ["# Summary Table — Mean Scores per Model\n"]
+    lines = ["# Summary Table - Mean Scores per Model\n"]
     lines.append("| Model | Persona | Censor | Format | Halluc | **Overall** |")
     lines.append("|---|---:|---:|---:|---:|---:|")
     
@@ -148,18 +148,18 @@ def render_summary_table(by_model: dict) -> str:
                 all_means.append(m)
                 row.append(f"{m:.2f}")
             else:
-                row.append("—")
+                row.append("-")
         if all_means:
             row.append(f"**{mean(all_means):.2f}**")
         else:
-            row.append("—")
+            row.append("-")
         lines.append("| " + " | ".join(row) + " |")
     
     return "\n".join(lines) + "\n"
 
 
 def render_per_scenario(by_pair: dict) -> str:
-    """Per scenario breakdown — separate table per metric."""
+    """Per scenario breakdown - separate table per metric."""
     
     lines = ["# Per-Scenario Breakdown\n"]
     
@@ -180,7 +180,7 @@ def render_per_scenario(by_pair: dict) -> str:
                 if scores:
                     row.append(f"{mean(scores):.2f}")
                 else:
-                    row.append("—")
+                    row.append("-")
             lines.append("| " + " | ".join(row) + " |")
         lines.append("")
     
@@ -188,7 +188,7 @@ def render_per_scenario(by_pair: dict) -> str:
 
 
 def render_ft_delta(by_model: dict) -> str:
-    """Pre-FT vs Post-FT — pair models by base name, compute delta."""
+    """Pre-FT vs Post-FT - pair models by base name, compute delta."""
     
     lines = ["# Fine-Tuning Effect (Δ = post-FT − pre-FT)\n"]
     lines.append("Positive values indicate improvement after fine-tuning.\n")
@@ -217,20 +217,20 @@ def render_ft_delta(by_model: dict) -> str:
                 sign = "+" if delta >= 0 else ""
                 row.append(f"{sign}{delta:.2f}")
             else:
-                row.append("—")
+                row.append("-")
         if all_deltas:
             d = mean(all_deltas)
             sign = "+" if d >= 0 else ""
             row.append(f"**{sign}{d:.2f}**")
         else:
-            row.append("—")
+            row.append("-")
         lines.append("| " + " | ".join(row) + " |")
     
     return "\n".join(lines) + "\n"
 
 
 def render_score_distribution(dist: dict) -> str:
-    """Histogram of scores per (model, metric) — % of sessions at each score level."""
+    """Histogram of scores per (model, metric) - % of sessions at each score level."""
     
     lines = ["# Score Distribution\n"]
     lines.append("Percentage of sessions receiving each score level (0-5).\n")

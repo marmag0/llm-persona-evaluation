@@ -251,12 +251,12 @@ def judge_file(master_path: Path, judgement_path: Path, chat: ChatOpenAI, system
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
         
         if scores is None:
-            print(f"FAIL ({elapsed:.1f}s) — judge output not parseable, logged raw")
+            print(f"FAIL ({elapsed:.1f}s) - judge output not parseable, logged raw")
         else:
             score_summary = " ".join(
                 f"{k[:3]}={v['score']}" for k, v in scores.items()
             )
-            print(f"OK ({elapsed:.1f}s) — {score_summary}")
+            print(f"OK ({elapsed:.1f}s) - {score_summary}")
 
 
 # Main: Iterate Over All model/scenario Master Files

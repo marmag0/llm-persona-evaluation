@@ -283,7 +283,7 @@ class VirtualFileSystem:
         """Recursive delete. Returns True on success, False on rejection.
         
         Rejected by VFS (filesystem invariants):
-        - /, /proc, /sys — not possible to delete in classic Linux
+        - /, /proc, /sys - not possible to delete in classic Linux
         - target not found
         
         All other targets are passed (e.g., rm /etc/passwd, rm -rf /home).
@@ -524,7 +524,7 @@ class VirtualFileSystem:
 
     def apply_fs_changes(self, changes: list) -> list[dict]:
         """Applies fs_changes list from model output.
-        Returns list of rejections — each is a dict {change, reason}."""
+        Returns list of rejections - each is a dict {change, reason}."""
         
         rejected = []
         
