@@ -10,11 +10,11 @@ This project investigates the capability of modern Small Language Models to effe
 
 ## Table of Contents
 
-- [Research Objectives and Plans](#research-objectives-and-plans)
-  - [Main Research Goals](#main-research-goals)
+- [Research Plans and Objectives](#research-plans-and-objectives)
   - [Research Gantt Chart](#research-gantt-chart)
   - [Selected Models (SLM)](#selected-models-slm)
   - [Honeypot Flow](#honeypot-flow)
+  - [Main Research Goals](#main-research-goals)
 - [Grading, Test Scenarios and Other Details](#grading-test-scenarios-and-other-details)
   - [Evaluation Metrics](#evaluation-metrics)
     - [Censorship and Refusal Rates](#censorship-and-refusal-rates)
@@ -22,9 +22,17 @@ This project investigates the capability of modern Small Language Models to effe
     - [Structural Formatting Reliability](#structural-formatting-reliability)
     - [Quality of Generated Fictional Content (Hallucination Realism)](#quality-of-generated-fictional-content-hallucination-realism)
   - [Virtual File System (VFS)](#virtual-file-system-vfs)
+  - [LLM as JSON endpoint](#llm-as-json-endpoint)
+    - [Input Format](#input-format)
+    - [Output Format](#output-format)
   - [Unified System Prompt (Linux Persona)](#unified-system-prompt-linux-persona)
   - [LLM-as-Judge Prompt](#llm-as-judge-prompt)
   - [Testing Datasets](#testing-datasets)
+  - [Logging](#logging)
+- [Fine Tuning](#fine-tuning)
+  - [Training Configuration](#training-configuration)
+  - [Dataset Format](#dataset-format)
+- [Final Reporting](#final-reporting)
 - [Setup and Project Structure](#setup-and-project-structure)
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
@@ -310,6 +318,14 @@ Each training example is stored as a single line in JSONL format, structured as 
 ```
 
 **Current training set is located in [training.jsonl](https://github.com/marmag0/llm-persona-evaluation/blob/main/training.jsonl) file.**
+
+## Final Reporting
+
+After all evaluation runs (pre-FT and post-FT) and judge passes are complete, the [`code/prod/analyze_judgements.py`](https://github.com/marmag0/llm-persona-evaluation/blob/main/code/prod/analyze_judgements.py) script aggregates raw judgement records from `results/judgements/` into structured reports for the paper and presentation.
+
+The script discovers all `<model>/<scenario>.jsonl` files automatically and produces five markdown tables plus one CSV under `results/analysis/`. Pre-FT and post-FT models are paired by the `-ft` suffix on directory names (e.g. `qwen-2.5-7b` ↔ `qwen-2.5-7b-ft`), enabling automated delta computation.
+
+Final results will be stored in PDF presentation in root of this repositry soon... [TODO]
 
 ## Setup and Project Structure [TODO]
 
