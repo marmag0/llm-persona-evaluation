@@ -2,6 +2,7 @@ import sys
 import time
 from pathlib import Path
 from datetime import datetime
+import os
 
 from honeypot_prod import init_model
 
@@ -60,12 +61,20 @@ def main(ips: int, temp: float = 0.3):
         "05_fs_continuity",
     ]
 
-    models = [
-        #"gpt-5-nano-2025-08-07",
-        #"llama-3.1-8b",
-        #"qwen-2.5-7b",
-        "mistral-7b",
-    ]
+    # MODEL_OVERRIDE=qwen-2.5-7b-ft python3 evaluation_runner.py
+    model_override = os.getenv("MODEL_OVERRIDE")
+    if model_override:
+        models = [model_override]
+        print(f"[INFO] MODEL_OVERRIDE set, sweeping only: {model_override}\n")
+    else:
+        models = [
+            "qwen-2.5-7b",
+            "llama-3.1-8b",
+            "mistral-7b",
+            "qwen-2.5-7b-ft",
+            "llama-3.1-8b-ft",
+            "mistral-7b-ft",
+        ]
 
     system_prompt = "system_eval_prod.xml"
     tests_dir = "tests_prod"

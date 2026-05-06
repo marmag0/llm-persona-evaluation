@@ -28,6 +28,18 @@ TESTED_MODELS = {
         "model_string": "mistralai/Mistral-7B-Instruct-v0.3",
         "base_url_env": "RUNPOD_MISTRAL_URL",
     },
+    "llama-3.1-8b-ft": {
+        "model_string": "marmag0/llama-3.1-8b-honeypot-ft",
+        "base_url_env": "RUNPOD_LLAMA_FT_URL",
+    },
+    "qwen-2.5-7b-ft": {
+        "model_string": "marmag0/qwen-2.5-7b-honeypot-ft",
+        "base_url_env": "RUNPOD_QWEN_FT_URL",
+    },
+    "mistral-7b-ft": {
+        "model_string": "marmag0/mistral-7b-honeypot-ft",
+        "base_url_env": "RUNPOD_MISTRAL_FT_URL",
+    },
 }
 
 
