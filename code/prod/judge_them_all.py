@@ -203,7 +203,7 @@ def count_existing_judgements(judgement_path: Path) -> int:
         return sum(1 for _ in f)
 
 
-def judge_file(master_path: Path, judgement_path: Path, chat: ChatOpenAI):
+def judge_file(master_path: Path, judgement_path: Path, chat: ChatOpenAI, system_prompt: str):
     """
     Iterate over all sessions in a master jsonl file, judge each, write to
     judgement jsonl. Skip sessions already judged (resume).
@@ -233,7 +233,7 @@ def judge_file(master_path: Path, judgement_path: Path, chat: ChatOpenAI):
         start = datetime.now()
         
         judge_input = build_judge_input(session)
-        scores, raw = call_judge(chat, judge_input, system_prompt=load_judge_system_prompt())
+        scores, raw = call_judge(chat, system_prompt, judge_input)
         
         elapsed = (datetime.now() - start).total_seconds()
         
@@ -382,10 +382,11 @@ def main(target_dirs: list[str] | None = None, test_single_line: tuple[str, int]
 
 if __name__ == "__main__":
     # Case 1: full sweep
-    #main()
+    main()
     
     # Case 2: specified models
     #main(target_dirs=["./results/qwen-2.5-7b", "./results/llama-3.1-8b"])
     
     # Case 3: smoke test of single session
-    main(test_single_line=("./results/qwen-2.5-7b/qwen-2.5-7b_01_schema_adherence.jsonl", 1))
+    # main(test_single_line=("./results/qwen-2.5-7b/qwen-2.5-7b_01_schema_adherence.jsonl", 1))
+    

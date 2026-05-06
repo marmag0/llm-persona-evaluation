@@ -63,8 +63,8 @@ def main(ips: int, temp: float = 0.3):
     models = [
         #"gpt-5-nano-2025-08-07",
         #"llama-3.1-8b",
-        "qwen-2.5-7b",
-        #"mistral-7b",
+        #"qwen-2.5-7b",
+        "mistral-7b",
     ]
 
     system_prompt = "system_eval_prod.xml"
