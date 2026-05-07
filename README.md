@@ -8,6 +8,8 @@ The official paper name is: **"Evaluation of Small Language Models as Linux Term
 
 This project investigates the capability of modern Small Language Models to effectively simulate complex IT environments for cybersecurity purposes, with a primary focus on interactive honeypots. The core objective is to evaluate how well these models can overcome their **built-in conversational biases**, **safety guardrails**, and **formatting limitations** to function as **convincing, deterministic system components**. By delegating strict state management to a deterministic Python backend (Virtual File System) and utilizing the SLM as a dynamic rendering engine, this research measures the feasibility of using AI to create highly realistic, deceptive environments that can dynamically adapt to an attacker's behavior.
 
+**>>>** [Final Paper PDF Presentation](https://github.com/marmag0/llm-persona-evaluation/hutnicza-konferencja-studenckich-koł-naukowych-agh.pdf) **<<<**
+
 ## Table of Contents
 
 - [Research Plans and Objectives](#research-plans-and-objectives)
@@ -17,10 +19,10 @@ This project investigates the capability of modern Small Language Models to effe
   - [Main Research Goals](#main-research-goals)
 - [Grading, Test Scenarios and Other Details](#grading-test-scenarios-and-other-details)
   - [Evaluation Metrics](#evaluation-metrics)
-    - [Censorship and Refusal Rates](#censorship-and-refusal-rates)
-    - [Persona Adoption Stability](#persona-adoption-stability)
-    - [Structural Formatting Reliability](#structural-formatting-reliability)
-    - [Quality of Generated Fictional Content (Hallucination Realism)](#quality-of-generated-fictional-content-hallucination-realism)
+    - [CENSORSHIP AND REFUSAL RATES](#censorship-and-refusal-rates)
+    - [PERSONA ADOPTION STABILITY](#persona-adoption-stability)
+    - [STRUCTURAL FORMATTING RELIABILITY](#structural-formatting-reliability)
+    - [QUALITY OF GENERATED FICTIONAL CONTENT (HALLUCINATION REALISM)](#quality-of-generated-fictional-content-hallucination-realism)
   - [Virtual File System (VFS)](#virtual-file-system-vfs)
   - [LLM as JSON endpoint](#llm-as-json-endpoint)
     - [Input Format](#input-format)
@@ -32,11 +34,12 @@ This project investigates the capability of modern Small Language Models to effe
 - [Fine Tuning](#fine-tuning)
   - [Training Configuration](#training-configuration)
   - [Dataset Format](#dataset-format)
+  - [Fine Tuned Models](#fine-tuned-models)
 - [Final Reporting](#final-reporting)
-- [Setup and Project Structure](#setup-and-project-structure)
-  - [Prerequisites](#prerequisites)
-  - [Setup](#setup)
+- [Setup and Project Structure [TODO]](#setup-and-project-structure-todo)
   - [Structure](#structure)
+- [Prerequisites [TODO]](#prerequisites-todo)
+  - [Setup [TODO]](#setup-todo)
 
 ## Research Plans and Objectives
 
@@ -351,14 +354,6 @@ Final results will be stored in PDF presentation in root of this repositry soon.
 
 ## Setup and Project Structure [TODO]
 
-### Prerequisites [TODO]
-
-...
-
-### Setup [TODO]
-
-...
-
 ### Structure
 
 - **Core Configurations**
@@ -378,3 +373,11 @@ Final results will be stored in PDF presentation in root of this repositry soon.
 
 - **`tests/` - Evaluation Scenarios**
   - a collection of text-based [test scenarios](tests/) defining specific SSH session flows to evaluate different aspects of model behavior.
+
+## Prerequisites [TODO]
+
+...
+
+### Setup [TODO]
+
+...

@@ -390,17 +390,17 @@ def init_model(
 
 if __name__ == "__main__":
     # HITL - manual testing
-    #init_model(
-    #    conversation_type="human_in_the_loop",
-    #    system_prompt="system_eval_prod.xml",
-    #    initial_user="user",
-    #    model_id="gpt-5-nano-2025-08-07",
-    #    temperature=0.3,
-    #)
+    init_model(
+        conversation_type="human_in_the_loop",
+        system_prompt="system_eval_prod.xml",
+        initial_user="user",
+        model_id="gpt-5-nano-2025-08-07",
+        temperature=0.3,
+    )
 
     # Automated tests
-    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/01_schema_adherence.txt", model_id="gpt-5-nano-2025-08-07")
-    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/02_persona_adoption.txt", model_id="gpt-5-nano-2025-08-07")
-    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/03_alignment_tax.txt", model_id="gpt-5-nano-2025-08-07")
-    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/04_hallucination_realism.txt", model_id="gpt-5-nano-2025-08-07")
-    init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/05_fs_continuity.txt", model_id="gpt-5-nano-2025-08-07")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/01_schema_adherence.txt", model_id="gpt-5-nano-2025-08-07")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/02_persona_adoption.txt", model_id="gpt-5-nano-2025-08-07")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/03_alignment_tax.txt", model_id="gpt-5-nano-2025-08-07")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/04_hallucination_realism.txt", model_id="gpt-5-nano-2025-08-07")
+    #init_model(conversation_type="automated_test", system_prompt="system_eval_prod.xml", test_file="tests_prod/05_fs_continuity.txt", model_id="gpt-5-nano-2025-08-07")
