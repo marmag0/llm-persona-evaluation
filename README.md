@@ -8,7 +8,7 @@ The official paper name is: **"Evaluation of Small Language Models as Linux Term
 
 This project investigates the capability of modern Small Language Models to effectively simulate complex IT environments for cybersecurity purposes, with a primary focus on interactive honeypots. The core objective is to evaluate how well these models can overcome their **built-in conversational biases**, **safety guardrails**, and **formatting limitations** to function as **convincing, deterministic system components**. By delegating strict state management to a deterministic Python backend (Virtual File System) and utilizing the SLM as a dynamic rendering engine, this research measures the feasibility of using AI to create highly realistic, deceptive environments that can dynamically adapt to an attacker's behavior.
 
-**>>>** [Final Paper PDF Presentation](https://github.com/marmag0/llm-persona-evaluation/hutnicza-konferencja-studenckich-koł-naukowych-agh.pdf) **<<<**
+**>>>** [Final Paper PDF Presentation](https://github.com/marmag0/llm-persona-evaluation/blob/main/hutnicza-konferencja-studenckich-koł-naukowych-agh.pdf) **<<<**
 
 ## Table of Contents
 
