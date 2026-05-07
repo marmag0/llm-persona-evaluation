@@ -382,7 +382,12 @@ def main(target_dirs: list[str] | None = None, test_single_line: tuple[str, int]
 
 if __name__ == "__main__":
     # Case 1: full sweep
-    main()
+    # e.g. MODEL_OVERRIDE=qwen-2.5-7b-ft python3 judge_them_all.py
+    model_override = os.getenv("MODEL_OVERRIDE")
+    if model_override:
+        main(target_dirs=[f"./results/{model_override}"])
+    else:
+        main()
     
     # Case 2: specified models
     #main(target_dirs=["./results/qwen-2.5-7b", "./results/llama-3.1-8b"])

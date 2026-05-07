@@ -22,7 +22,7 @@ db/
 
 .docker/
 logs/
-results/
+demo/results/
 *.log
 
 .env
