@@ -359,6 +359,22 @@ Final results will be stored in PDF presentation in root of this repositry soon.
 
 ...
 
-### Structure [TODO]
+### Structure
 
-...
+- **Core Configurations**
+  - [`system_eval.xml`](system_eval.xml) - the foundational system prompt that enforces the Linux terminal persona and JSON output format.
+  - [`system_judge.xml`](system_judge.xml) - comprehensive grading criteria used by the LLM-as-a-judge to evaluate model performance across four key metrics.
+
+- **`code/prod/` - Evaluation Pipeline**
+  - [`evaluation_runner.py`](code/prod/evaluation_runner.py) - orchestrates large-scale evaluation sweeps across multiple models and test scenarios.
+  - [`honeypot_prod.py`](code/prod/honeypot_prod.py) - manages the interaction loop between the SLM and the VFS, handling API communication and session logging.
+  - [`vfs_prod.py`](code/prod/vfs_prod.py) - a deterministic Python implementation of a Linux-like file system that maintains state and provides context for the LLM.
+  - [`judge_them_all.py`](code/prod/judge_them_all.py) - batch-processes raw evaluation logs through the judge model to generate structured scores.
+  - [`analyze_judgements.py`](code/prod/analyze_judgements.py) - aggregates results, calculates FT deltas, and generates final markdown reports and CSV data.
+
+- **`code/ft/` - Fine-Tuning**
+  - [`train_qlora.py`](code/ft/train_qlora.py) - script for efficient QLoRA fine-tuning of SLMs using the Unsloth library.
+  - [`dataset_full.jsonl`](code/ft/dataset_full.jsonl) - the training dataset containing 600 examples of perfect terminal interactions and persona adherence.
+
+- **`tests/` - Evaluation Scenarios**
+  - a collection of text-based [test scenarios](tests/) defining specific SSH session flows to evaluate different aspects of model behavior.
